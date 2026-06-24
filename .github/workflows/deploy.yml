@@ -40,3 +40,5 @@ jobs:
       run: |
         zip -r function.zip .
         aws lambda update-function-code --function-name func1 --zip-file fileb://function.zip
+
+#this is by bhagya
