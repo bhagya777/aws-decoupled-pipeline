@@ -1,0 +1,42 @@
+name: CI/CD Pipeline
+
+# Trigger the workflow automatically on every push to the main branch
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  continuous-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Clone the repository code onto the GitHub runner runner instance
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up the correct runtime environment (e.g., Python)
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-node-version: '3.11' # Change to match your project runtime
+
+    # Step 3: Install dependencies and run test scripts
+    - name: Install Dependencies & Run Tests
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Add your testing commands here (e.g., pytest)
+
+    # Step 4: Authenticate cleanly with AWS using your stored Repository Secrets
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets::AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets::AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-north-1  # Stockholm region used previously
+
+    # Step 5: Deploy step (Example: Updating a Lambda function code bundle)
+    - name: Deploy Application code to Lambda
+      run: |
+        zip -r function.zip .
+        aws lambda update-function-code --function-name func1 --zip-file fileb://function.zip
